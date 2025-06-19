@@ -10,6 +10,7 @@ class MassSpringSimulator:
         self.T = T
         self.t = np.arange(0, T, dt)  # これなら t[0] = 0.0 が保証される
         self.N = len(self.t)
+        self.g = 9.81
         # self.N = int(T / dt)                # ステップ数
         # self.t = np.linspace(0, T, self.N)  # 時刻配列
 
@@ -133,3 +134,18 @@ class MassSpringSimulator:
         ax = np.gradient(vx, self.dt)
 
         return self.t, x, vx, ax, p, v, a
+
+    def step(self, x_t, x_next, p_t, v_t):
+        """
+        x_t:     前ステップの駆動点位置（使わない場合もあり）
+        x_next:  次の駆動点位置（モデルが予測）
+        p_t:     現在の質点位置
+        v_t:     現在の質点速度
+        
+        return: 1ステップ後の質点位置 p(t+1)
+        """
+        stretch = (p_t - x_next) + self.l
+        a_t = (-self.k * stretch - self.c * v_t) / self.m - self.g
+        v_next = v_t + a_t * self.dt
+        p_next = p_t + v_next * self.dt
+        return p_next

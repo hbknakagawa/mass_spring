@@ -26,7 +26,9 @@ def main():
                 csv_path=csv_path,
                 output_dir=OUTPUT_DIR,
                 file_id=file_id,
-                seq_len=SEQ_LEN
+                seq_len=SEQ_LEN,
+                input_cols=["Drive_Pos [x(t)]", "Mass_Pos [p(t)]"],
+                target_cols=["Drive_Pos [x(t)]"]
             )
 
             file_id += 1

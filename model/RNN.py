@@ -24,4 +24,6 @@ class RNNModel(nn.Module):
         """
         out, _ = self.rnn(x)              # out: (batch, seq_len, hidden_size)
         last_hidden = out[:, -1, :]       # 最後の時刻ステップのみ使用
-        return self.fc(last_hidden)
+
+        x_next = self.fc(last_hidden)
+        return torch.sigmoid(self.fc(last_hidden)) * 1.0 + 1.0  # [1.0, 2.0] の範囲に制約

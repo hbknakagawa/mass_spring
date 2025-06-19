@@ -19,10 +19,10 @@ def train_model(model_class, input_size, output_size, hidden_size,
     os.makedirs(f"{log_dir}/models", exist_ok=True)
 
     # データ読み込み
-    input_files = sorted([f for f in os.listdir("datasets/processed") if f.startswith("input_")])
-    target_files = sorted([f for f in os.listdir("datasets/processed") if f.startswith("target_")])
-    input_data = [np.load(os.path.join("datasets/processed", f)) for f in input_files]
-    target_data = [np.load(os.path.join("datasets/processed", f)) for f in target_files]
+    input_files = sorted([f for f in os.listdir("processed_datasets") if f.startswith("input_")])
+    target_files = sorted([f for f in os.listdir("processed_datasets") if f.startswith("target_")])
+    input_data = [np.load(os.path.join("processed_datasets", f)) for f in input_files]
+    target_data = [np.load(os.path.join("processed_datasets", f)) for f in target_files]
 
     # train/test 分割
     split = int(len(input_data) * 0.8)
@@ -49,8 +49,7 @@ def train_model(model_class, input_size, output_size, hidden_size,
         for x_batch, y_batch in train_loader:
             optimizer.zero_grad()
             output = model(x_batch)
-            p_seq = x_batch[:, :, 3]  # p(t) シーケンス
-            loss = custom_loss(output, y_batch, p_seq)
+            loss = custom_loss(output, y_batch, x_batch)
             loss.backward()
             optimizer.step()
             total_loss += loss.item()
@@ -63,27 +62,26 @@ def train_model(model_class, input_size, output_size, hidden_size,
         with torch.no_grad():
             for x_batch, y_batch in test_loader:
                 output = model(x_batch)
-                p_seq = x_batch[:, :, 3]
-                loss = custom_loss(output, y_batch, p_seq)
+                loss = custom_loss(output, y_batch, x_batch)
                 val_loss += loss.item()
         avg_val_loss = val_loss / len(test_loader)
         val_losses.append(avg_val_loss)
 
-        print(f"Epoch {epoch}: Train Loss = {avg_train_loss:.6f}, Val Loss = {avg_val_loss:.6f}")
+        print(f"Epoch {epoch}/{num_epochs}: Train Loss = {avg_train_loss:.6f}, Val Loss = {avg_val_loss:.6f}")
 
         # モデル保存
         if epoch % save_interval == 0:
             torch.save(model.state_dict(), f"{log_dir}/models/model_{epoch}.pth")
 
-        # Early stopping
-        if avg_val_loss < best_loss:
-            best_loss = avg_val_loss
-            patience_counter = 0
-        else:
-            patience_counter += 1
-            if patience_counter >= patience:
-                print("Early stopping triggered.")
-                break
+        # # Early stopping
+        # if avg_val_loss < best_loss:
+        #     best_loss = avg_val_loss
+        #     patience_counter = 0
+        # else:
+        #     patience_counter += 1
+        #     if patience_counter >= patience:
+        #         print("Early stopping triggered.")
+        #         break
 
     # 損失プロット保存
     plt.plot(train_losses, label='Train Loss')
