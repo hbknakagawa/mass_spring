@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 class RNNModel(nn.Module):
-    def __init__(self, input_size=6, hidden_size=64, output_size=6, num_layers=1):
+    def __init__(self, input_size=2, hidden_size=64, output_size=1, num_layers=1):
         """
         シンプルなRNNベースの時系列予測モデル
         - input_size: 入力次元数（x, vx, ax, p, v, a → 6）
@@ -24,6 +24,4 @@ class RNNModel(nn.Module):
         """
         out, _ = self.rnn(x)              # out: (batch, seq_len, hidden_size)
         last_hidden = out[:, -1, :]       # 最後の時刻ステップのみ使用
-
-        x_next = self.fc(last_hidden)
-        return torch.sigmoid(self.fc(last_hidden)) * 1.0 + 1.0  # [1.0, 2.0] の範囲に制約
+        return self.fc(last_hidden)

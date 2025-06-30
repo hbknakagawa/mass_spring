@@ -113,7 +113,10 @@ def main():
     output_dim = Y.shape[1]  # 出力の次元
     hidden_dim = 64
 
-    model = RNNPredictor(input_dim, hidden_dim, output_dim)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
+
+    model = RNNPredictor(input_dim, hidden_dim, output_dim).to(device)
 
     # 保存パスの作成
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')

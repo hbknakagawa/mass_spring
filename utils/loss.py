@@ -1,18 +1,20 @@
 import torch
 import torch.nn as nn
 
-def physics_step(x_next, p_t, v_t, m=1.0, k=10.0, c=1.0, l=1.0, dt=0.1, g=9.8):
+def physics_step(x_next, p_t, v_t,
+                 m=1.0, k=10.0, c=1.0, l=1.0, dt=0.1, g=9.81):
     """
-    モデルが出力した x(t+1) に基づいて、p(t+1) を物理シミュレーションで計算
-    - x_next: モデル出力 (batch,)
+    モデル出力の x(t+1) に基づき、p(t+1) をオイラー法で推定
+    - x_next: モデルの出力 (batch,)
     - p_t, v_t: 現在の位置と速度 (batch,)
-    - 戻り値: p(t+1) のシミュレート結果
     """
     stretch = (p_t - x_next) + l
-    a_t = (-k * stretch - c * v_t) / m - g
+    a_t = (-k * stretch - c * v_t) / m - g  # 重力項あり
     v_next = v_t + a_t * dt
     p_next = p_t + v_next * dt
     return p_next
+
+
 
 def custom_loss(x_pred, y_true, input_seq):
     """
